@@ -66,37 +66,5 @@ export default {
 </script>
 
 <style>
-.chat-container {
-  height: 100vh; /* Full height for the chat container */
-  display: flex;
-  flex-direction: column;
-}
 
-.chat-messages {
-  flex: 1;
-  overflow-y: auto; /* Allow scrolling for messages */
-  padding: 1rem;
-}
-
-.chat-message {
-  display: flex;
-  margin-bottom: 0.5rem; /* Space between messages */
-}
-
-.bubble {
-  max-width: 70%; /* Limit bubble width */
-  padding: 5px 12px;
-  border-radius: 20px;
-  color: white; /* Text color inside bubbles */
-}
-
-.chat-message.me .bubble {
-  background-color: #218aff; /* Blue for messages from me */
-  align-self: flex-end; /* Align right */
-}
-
-.chat-message.other .bubble {
-  background-color: #6e6e6e; /* Gray for messages from the other person */
-  align-self: flex-start; /* Align left */
-}
 </style>

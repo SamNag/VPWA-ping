@@ -1,23 +1,6 @@
 // app global css in SCSS form
 
-/* Global styling for online/offline status */
-.online-status {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
 
-.online-status.online {
-  background-color: #4caf50; /* Green for online */
-  box-shadow: inset 0 0 1px 1px rgb(98, 255, 105); /* Inner glow effect */
-}
-
-
-.online-status.offline {
-  background-color: #9e9e9e; /* Grey for offline */
-  box-shadow: inset 0 0 1px 1px rgb(207, 207, 207); /* Inner glow effect */
-
-}
 
 /* src/assets/styles/fonts.scss */
 @font-face {
@@ -95,3 +78,60 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+
+/* Chat component styling START */
+.chat-container {
+  height: 100vh; /* Full height for the chat container */
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto; /* Allow scrolling for messages */
+  padding: 1rem;
+}
+
+.chat-message {
+  display: flex;
+  margin-bottom: 0.5rem; /* Space between messages */
+}
+
+.bubble {
+  max-width: 70%; /* Limit bubble width */
+  padding: 5px 12px;
+  border-radius: 20px;
+  color: white; /* Text color inside bubbles */
+}
+
+.chat-message.me .bubble {
+  background-color: #218aff; /* Blue for messages from me */
+  align-self: flex-end; /* Align right */
+}
+
+.chat-message.other .bubble {
+  background-color: #6e6e6e; /* Gray for messages from the other person */
+  align-self: flex-start; /* Align left */
+}
+
+/* Chat component styling  END*/
+
+/* Global styling for online/offline status START */
+.online-status {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.online-status.online {
+  background-color: #4caf50; /* Green for online */
+  box-shadow: inset 0 0 1px 1px rgb(98, 255, 105); /* Inner glow effect */
+}
+
+
+.online-status.offline {
+  background-color: #9e9e9e; /* Grey for offline */
+  box-shadow: inset 0 0 1px 1px rgb(207, 207, 207); /* Inner glow effect */
+
+}
+/* Global styling for online/offline status END */
