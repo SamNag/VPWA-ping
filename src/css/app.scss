@@ -84,12 +84,15 @@
   height: 100vh; /* Full height for the chat container */
   display: flex;
   flex-direction: column;
+
 }
 
 .chat-messages {
   flex: 1;
   overflow-y: auto; /* Allow scrolling for messages */
-  padding: 1rem;
+  padding: 16px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
 .chat-message {
@@ -97,11 +100,16 @@
   margin-bottom: 0.5rem; /* Space between messages */
 }
 
+.chat-messages::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 .bubble {
-  max-width: 70%; /* Limit bubble width */
+  max-width: 60%; /* Limit bubble width */
   padding: 5px 12px;
   border-radius: 20px;
   color: white; /* Text color inside bubbles */
+  word-break: break-word;
 }
 
 .chat-message.me .bubble {
@@ -112,6 +120,14 @@
 .chat-message.other .bubble {
   background-color: #6e6e6e; /* Gray for messages from the other person */
   align-self: flex-start; /* Align left */
+}
+
+.chat-input-bar {
+  position: sticky;
+  bottom: 0;
+  background-color: #1d1d1d; /* Ensure the same dark background as the page */
+  padding: 8px 16px;
+  z-index: 10;
 }
 
 /* Chat component styling  END*/

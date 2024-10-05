@@ -70,7 +70,7 @@ export default {
 
 <style>
 .q-card {
-  min-width: 350px;
+  width: 350px;
   border-radius: 20px;
   background-color: rgba(255, 255, 255, 0.5);
   box-shadow: 0 0 10px #ffffff;

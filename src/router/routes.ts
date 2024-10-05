@@ -1,15 +1,11 @@
 import { RouteRecordRaw } from 'vue-router';
-import UsersPage from 'src/pages/UsersPage.vue'; // Import your new component
-
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/IndexPage.vue') },
-      { path: 'users', component: UsersPage },
+      { path: '', component: () => import('pages/SignPage.vue') },
       {path: 'chat', component: () => import('pages/ChatPage.vue') },
-      {path: 'sign', component: () => import('pages/SignPage.vue') },
     ],
   },
 
