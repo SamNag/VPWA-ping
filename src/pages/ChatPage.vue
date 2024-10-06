@@ -33,7 +33,6 @@
       </q-input>
 
       <q-list bordered>
-        
         <!-- Invitation item -->
         <q-item clickable v-ripple class="text-white sf-pro-600">
           <q-item-section avatar>
@@ -150,48 +149,43 @@
     <q-page-container>
       <q-page dark class="bg-dark text-white sf-pro-500">
         <div class="chat-container">
-    <div class="chat-messages q-pa-md">
-      <template v-for="(message, index) in messages" :key="index">
-        <!-- Date Divider -->
-        <div v-if="shouldShowDateDivider(index)" class="text-center q-my-md">
-          <q-chip outline color="grey">
-            {{ formatDate(message.timestamp) }}
-          </q-chip>
-        </div>
-        <!-- Message block -->
-        <div class="message-group" :class="{'new-group': shouldShowUsername(index)}">
-          <!-- Avatar -->
-          <q-avatar v-if="shouldShowUsername(index)" size="36px" class="q-mr-sm">
-            <img :src="message.avatar">
-          </q-avatar>
-          <div class="message-content">
-            <!-- Show username and timestamp only if required -->
-            <div v-if="shouldShowUsername(index)" class="row items-center q-gutter-x-sm">
-              <span class="text-weight-bold">{{ message.username }}</span>
-              <span class="text-caption text-grey">{{ formatTime(message.timestamp) }}</span>
+          <!-- Chat messages -->
+          <div class="chat-messages">
+            <div
+              v-for="(message, index) in messages"
+              :key="index"
+              :class="['chat-message', message.from === 'me' ? 'me' : 'other']"
+              :style="{ 'justify-content': message.from === 'me' ? 'flex-end' : 'flex-start' }"
+            >
+              <!-- Date Divider -->
+              <div v-if="shouldShowDateDivider(index)" class="date-divider">
+                <span>{{ formatDate(message.timestamp) }}</span>
+                <hr />
+              </div>
+              
+              <div class="message-header">
+                <span class="sender">{{ message.from === 'me' ? 'You' : message.from }}</span>
+                <span class="time">{{ formatTime(message.timestamp) }}</span>
+              </div>
+              <div class="bubble">
+                <div>
+                  <span>{{ message.text }}</span>
+                </div>
+              </div>
             </div>
-            <!-- Message Text -->
-            <div class="message-text">{{ message.text }}</div>
+          </div>
+
+
+
+           <!-- Chat input -->
+          <div class="chat-input-bar">
+            <q-input rounded standout="true" v-model="text" class="sf-pro-500" bg-color="grey-9" text-color="grey-5" dense @keyup.enter="sendMessage">
+              <template v-slot:append>
+                <q-btn flat round dense icon="arrow_upward" color="dark" @click="sendMessage" />
+              </template>
+            </q-input>
           </div>
         </div>
-      </template>
-    </div>
-    <!-- Chat input -->
-    <div class="chat-input-bar q-pa-md">
-      <q-input 
-        v-model="newMessage" 
-        @keyup.enter="sendMessage"
-        outlined 
-        rounded
-        bg-color="grey-9"
-        placeholder="Type a message..."
-      >
-        <template v-slot:after>
-          <q-btn round flat icon="send" @click="sendMessage" />
-        </template>
-      </q-input>
-    </div>
-  </div>
       </q-page>
     </q-page-container>
   </q-layout>
@@ -199,7 +193,7 @@
 
 <script>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useQuasar, date } from 'quasar'
+import { useQuasar} from 'quasar'
 
 export default {
   setup() {
@@ -208,11 +202,15 @@ export default {
     const rightDrawerOpen = ref(false)
     const isSmallScreen = ref(false)
     const searchQuery = ref('')
-    const newMessage = ref('')
 
     const checkScreenSize = () => {
       isSmallScreen.value = $q.screen.lt.sm
     }
+
+    const formatTime = (timestamp) => {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    };
 
     onMounted(() => {
       checkScreenSize()
@@ -223,66 +221,46 @@ export default {
       window.removeEventListener('resize', checkScreenSize)
     })
 
-    const toggleLeftDrawer = () => {
-      leftDrawerOpen.value = !leftDrawerOpen.value
-    }
-
-    const toggleRightDrawer = () => {
-      rightDrawerOpen.value = !rightDrawerOpen.value
-    }
-
     return {
       leftDrawerOpen,
       rightDrawerOpen,
       isSmallScreen,
       searchQuery,
-      newMessage,
-      toggleLeftDrawer,
-      toggleRightDrawer
+      toggleLeftDrawer() {
+        leftDrawerOpen.value = !leftDrawerOpen.value
+      },
+      toggleRightDrawer() {
+        rightDrawerOpen.value = !rightDrawerOpen.value
+      },
+      formatTime
     }
   },
 
   data() {
     return {
+      text: '',
       messages: [
-        {
-          id: 1,
-          username: 'Alice',
-          avatar: 'https://cdn.quasar.dev/img/avatar2.jpg',
-          text: "Hey everyone! How's the project coming along?",
-          timestamp: new Date('2023-04-10T09:00:00')
-        },
-        {
-          id: 2,
-          username: 'Bob',
-          avatar: 'https://cdn.quasar.dev/img/avatar3.jpg',
-          text: 'Making good progress! Just finished the login page.',
-          timestamp: new Date('2023-04-10T09:05:00')
-        },
-        {
-        id: 3,
-        username: 'Alice',
-        avatar: 'https://cdn.quasar.dev/img/avatar2.jpg',
-        text: 'Great job, Bob! Can you share a screenshot?',
-        timestamp: new Date('2023-04-10T09:07:00')
-      },
-      {
-        id: 4,
-        username: 'Charlie',
-        avatar: 'https://cdn.quasar.dev/img/avatar4.jpg',
-        text: "I've been working on the database schema. Need some input on the user table.",
-        timestamp: new Date('2023-04-11T10:00:00')
-      },
-      {
-        id: 5,
-        username: 'Bob',
-        avatar: 'https://cdn.quasar.dev/img/avatar3.jpg',
-        text: "Sure thing, Alice! I'll post it in a bit.",
-        timestamp: new Date('2023-04-11T10:15:00')
-      }
+        { text: 'Hello! How are you?', from: 'Joe', timestamp: new Date('2023-05-15T14:00:00') },
+        { text: "I'm good, thanks for asking!", from: 'me', timestamp: new Date('2023-05-15T14:01:00') },
+        { text: "Just working on a school project. It's a web app.", from: 'me', timestamp: new Date('2023-05-15T14:01:30') },
+        { text: "Nice! What's it about?", from: 'Sarah', timestamp: new Date('2023-05-15T14:02:15') },
+        { text: "It's a single-page chat app using Vue.js and Quasar for the frontend.", from: 'me', timestamp: new Date('2023-05-15T14:03:00') },
+        { text: "I'm using Node.js with Socket.IO for real-time messaging.", from: 'me', timestamp: new Date('2023-05-15T14:03:30') },
+        { text: "That's cool! Is it working?", from: 'Sarah', timestamp: new Date('2023-05-15T14:04:45') },
+        { text: 'Yeah, mostly. I still need to refine some parts and add authentication with JWT.', from: 'me', timestamp: new Date('2023-05-15T14:05:30') },
+        { text: 'Authentication sounds tricky.', from: 'Joe', timestamp: new Date('2023-05-15T14:06:15') },
+        { text: "It is, but once it's done, it'll feel more polished.", from: 'me', timestamp: new Date('2023-05-15T14:07:00') },
+        { text: 'What else do you need to add?', from: 'Joe', timestamp: new Date('2023-05-15T14:08:30') },
+        { text: "Just a few more features like group chats. I'm keeping it simple for now.", from: 'me', timestamp: new Date('2023-05-15T14:09:15') },
+        { text: "Good plan. When's it due?", from: 'Sarah', timestamp: new Date('2023-05-15T14:10:00') },
+        { text: 'Two weeks! Trying to finish the main parts this week.', from: 'me', timestamp: new Date('2023-05-15T14:10:45') },
+        { text: "Good luck! You've got this.", from: 'Joe', timestamp: new Date('2023-05-15T14:11:30') },
+        { text: 'Thanks! I might need some testers soon.', from: 'me', timestamp: new Date('2023-05-15T14:12:15') },
+        { text: 'Count me in!', from: 'Sarah', timestamp: new Date('2023-05-15T14:13:00') }
       ],
+
       groups: [
-        { id: 1, name: 'VPWA Team' },
+        { id: 1, name: 'vpwa team' },
         { id: 2, name: 'Family' },
         { id: 3, name: 'Friends' },
         { id: 4, name: 'Work' },
@@ -307,59 +285,91 @@ export default {
     },
 
     sendMessage() {
-      if (this.newMessage.trim() !== '') {
+      if (this.text.trim() !== '') {
+        const timestamp = Date.now(); // Get the current timestamp
         this.messages.push({
-          id: this.messages.length + 1,
-          username: 'You',
-          avatar: 'https://cdn.quasar.dev/img/avatar5.jpg',
-          text: this.newMessage,
-          timestamp: new Date() // current time
+          text: this.text,
+          from: 'me',
+          timestamp: timestamp // Add timestamp to the message object
         });
-        this.newMessage = ''; // Clear the input field
+        this.text = ''; // Clear the input
       }
     },
 
-    shouldShowUsername(index) {
-      if (index === 0) return true; // Always show username for the first message
-      const currentMessage = this.messages[index];
-      const previousMessage = this.messages[index - 1];
-
-      // Check if the current message is from a different user or has a time difference greater than 5 minutes
-          return currentMessage.username !== previousMessage.username ||
-                date.getDateDiff(currentMessage.timestamp, previousMessage.timestamp, 'minutes') > 5;
-    },
-
-
     shouldShowDateDivider(index) {
-      if (index === 0) return true; // Always show date for the first message
-      const currentMessage = this.messages[index];
-      const previousMessage = this.messages[index - 1];
-      // Show date divider only if the current message is from a different day
-      return !date.isSameDate(currentMessage.timestamp, previousMessage.timestamp, 'day');
+    if (index === 0) return true; // Always show date divider for the first message
+
+    const currentMessage = this.messages[index];
+    const previousMessage = this.messages[index - 1];
+
+    // Show date divider only if the current message is from a different day
+    return !this.isSameDate(currentMessage.timestamp, previousMessage.timestamp);
     },
 
+    // Format timestamp into a human-readable date
     formatDate(timestamp) {
-      return date.formatDate(timestamp, 'MMMM D, YYYY')
+      const date = new Date(timestamp);
+      return date.toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
     },
 
-    formatTime(timestamp) {
-      return date.formatDate(timestamp, 'h:mm A')
-    },
+    // Utility function to check if two timestamps are from the same day
+    isSameDate(timestamp1, timestamp2) {
+      const date1 = new Date(timestamp1);
+      const date2 = new Date(timestamp2);
+
+      // Compare year, month, and day
+      return (
+        date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate()
+      );
+    }
   }
 }
 </script>
 
 <style scoped>
-.message-group {
-  display: flex;
-  margin-top: 30px;
-  margin-bottom: 4px;
-}
-
-.message-content {
-  flex-grow: 1;
+.chat-message {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+
 }
 
+.me.chat-message{
+  align-items: flex-end;
+}
+
+.message-header .sender {
+  margin-right: 10px; /* Add gap between sender and timestamp */
+}
+
+.message-header{
+  padding-left: 10px; /* Add gap between sender and timestamp */
+  padding-right: 10px;
+}
+
+.date-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 40px 0; /* Adds vertical space around the divider */
+  position: relative;
+}
+
+.date-divider span {
+  padding: 0 10px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  color: grey; /* Grey font for the date */
+}
+
+.date-divider hr {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  border: none;
+  border-top: 1px solid rgba(128, 128, 128, 0.5); /* Slightly transparent grey line */
+}
 </style>
