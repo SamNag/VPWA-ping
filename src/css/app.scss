@@ -122,6 +122,12 @@
   align-self: flex-start; /* Align left */
 }
 
+.chat-message.system .bubble {
+  background-color: #ff9100; /* Gray for messages from the other person */
+  align-self: flex-start; /* Align left */
+  color: #121212; /* Text color inside bubbles */
+}
+
 .chat-input-bar {
   position: sticky;
   bottom: 0;

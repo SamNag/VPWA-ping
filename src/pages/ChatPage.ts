@@ -84,10 +84,18 @@ export default {
       { id: 6, name: 'Skuska af adg ad g ad hg adh a a hwh ' }
     ])
 
+    const chatUsers: Ref<string[]> = ref([
+      'Joe',
+      'Sarah',
+      'Peter',
+      'Emily',
+      'me',
+    ])
+
     const currentChannel: Ref<Channel> = ref({
       name: 'VPWA Team',
       isPublic: false,
-      memberCount: 5,
+      memberCount: chatUsers.value.length
     })
 
     const scrollToBottom = () => {
@@ -107,14 +115,14 @@ export default {
       isLoading.value = true
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       // Add new messages to the beginning of the array
       const newMessages: Message[] = Array.from({ length: MESSAGES_PER_PAGE }, (_, i) => ({
         text: `Loaded message ${page.value * MESSAGES_PER_PAGE - i}`,
         from: i % 2 === 0 ? 'System' : 'OldUser',
         timestamp: new Date(Date.now() - (page.value * MESSAGES_PER_PAGE - i) * 60000)
       }))
-      
+
       messages.value = [...newMessages, ...messages.value]
       page.value++
       isLoading.value = false
@@ -202,6 +210,9 @@ export default {
         case 'help':
           showHelp()
           return true
+        case 'list':
+          showList()
+          return true
         default:
           return false
       }
@@ -225,10 +236,22 @@ export default {
       )
     }
 
+    const showList = () => {
+      const userList = chatUsers.value.join(', '); // Join users with a newline
+      messages.value.push({
+        text: `Users in chat:\n${userList}`, // Add a new line after the label
+        from: 'system',
+        timestamp: new Date()
+      });
+    };
+
+
+
     const showNotification = (message: string, type: string = 'info', timeout: number = 0) => {
       console.log('$q object:', $q)
       const notifyOptions: QNotifyCreateOptions = {
         message: message,
+        position: 'top',
         color: type,
         timeout: timeout,
         actions: [{ icon: 'close', color: 'white' }]

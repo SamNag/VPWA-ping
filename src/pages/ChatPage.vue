@@ -154,11 +154,11 @@
         <div v-if="isLoading" class="text-center q-pa-md">
           <q-spinner color="primary" size="3em" />
         </div>
-        
+
         <div
           v-for="(message, index) in messages"
           :key="index"
-          :class="['chat-message', message.from === 'me' ? 'me' : 'other']"
+          :class="['chat-message', message.from === 'me' ? 'me' :  message.from === 'system' ? 'system' : 'other']"
           :style="{ 'justify-content': message.from === 'me' ? 'flex-end' : 'flex-start' }"
           :ref="(el) => { if (index === 0) firstMessage[0] = el as HTMLElement }"
         >
@@ -167,9 +167,9 @@
             <span>{{ formatDate(message.timestamp) }}</span>
             <hr />
           </div>
-          
+
           <div class="message-header">
-            <span class="sender">{{ message.from === 'me' ? 'You' : message.from }}</span>
+            <span class="sender">{{ message.from === 'me' ? 'You' : message.from==='system' ? 'System': message.from }}</span>
             <span class="time">{{ formatTime(message.timestamp) }}</span>
           </div>
           <div class="bubble">
