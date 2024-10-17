@@ -6,7 +6,7 @@
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
 
         <q-toolbar-title class="q-pa-none sf-pro-700" style="text-align: center;">
-          Chat Name
+          {{ currentChannel.name }} {{ currentChannel.isPublic ? '🌍' : '🔒' }}
         </q-toolbar-title>
 
         <q-btn dense flat round icon="settings" @click="toggleRightDrawer" />
@@ -78,8 +78,22 @@
           <q-avatar size="150px" class="q-mb-sm">
             <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
           </q-avatar>
-          <q-item-label header class="text-white text-h6 q-mb-md">Channel Info</q-item-label>
+          <q-item-label header class="text-white text-h6 q-mb-md">{{currentUser.name}}</q-item-label>
         </div>
+
+        <q-item class="q-mb-xs">
+          <q-item-section avatar>
+            <q-icon
+              :name="currentUser.state === 'online' ? 'check_circle' : currentUser.state === 'dnd' ? 'do_not_disturb' : 'remove_circle'" color="white"
+            />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label class="text-white">My status</q-item-label>
+            <q-item-label caption class="text-grey-5">
+              {{ currentUser.state}}
+            </q-item-label>
+          </q-item-section>
+        </q-item>
 
         <q-item class="q-mb-xs">
           <q-item-section avatar>
@@ -115,32 +129,36 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple class="q-mb-sm">
-          <q-item-section avatar>
-            <q-icon name="notifications" color="white" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label class="text-white">Notifications</q-item-label>
-          </q-item-section>
-        </q-item>
+        <!-- Collapsible notification settings list -->
+        <q-expansion-item
+          v-model="notificationSettingsOpen"
+          icon="notifications"
+          header-class="text-white dark"
+          label="Notification"
+          dense
+          expand-separator
+        >
+          <q-list>
+            <q-item clickable v-ripple @click="setUserStatus('online')">
+              <q-item-section>
+                <q-item-label class="text-white">online</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item clickable v-ripple @click="setUserStatus('offline')">
+              <q-item-section>
+                <q-item-label class="text-white">offline</q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item clickable v-ripple @click="setUserStatus('dnd')">
+              <q-item-section>
+                <q-item-label class="text-white">dnd</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-expansion-item>
 
-        <q-item clickable v-ripple class="q-mb-sm">
-          <q-item-section avatar>
-            <q-icon name="security" color="white" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label class="text-white">Privacy</q-item-label>
-          </q-item-section>
-        </q-item>
 
-        <q-item clickable v-ripple class="q-mb-sm">
-          <q-item-section avatar>
-            <q-icon name="help" color="white" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label class="text-white">Help & Feedback</q-item-label>
-          </q-item-section>
-        </q-item>
+
       </q-list>
     </q-drawer>
 
@@ -158,7 +176,9 @@
         <div
           v-for="(message, index) in messages"
           :key="index"
-          :class="['chat-message', message.from === 'me' ? 'me' :  message.from === 'system' ? 'system' : 'other']"
+          :class="['chat-message',
+          message.text.includes(`@${currentUser.name}`) ? 'highlighted' : '',
+          message.from ===  currentUser.name ? 'me' :  message.from === 'system' ? 'system' : 'other']"
           :style="{ 'justify-content': message.from === 'me' ? 'flex-end' : 'flex-start' }"
           :ref="(el) => { if (index === 0) firstMessage[0] = el as HTMLElement }"
         >
@@ -169,7 +189,7 @@
           </div>
 
           <div class="message-header">
-            <span class="sender">{{ message.from === 'me' ? 'You' : message.from==='system' ? 'System': message.from }}</span>
+            <span class="sender">{{ message.from === currentUser.name ? 'You' : message.from==='system' ? 'System': message.from }}</span>
             <span class="time">{{ formatTime(message.timestamp) }}</span>
           </div>
           <div class="bubble">
@@ -206,6 +226,7 @@
 <script lang="ts">
 import ChatPage from './ChatPage'
 export default ChatPage
+
 </script>
 
 <style scoped>
@@ -263,5 +284,9 @@ export default ChatPage
   flex-grow: 1;
   overflow-y: auto;
   padding: 20px;
+}
+.highlighted {
+  font-weight: bold;
+  color: #F2C037;
 }
 </style>
