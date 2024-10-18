@@ -127,21 +127,41 @@ export default {
     }
 
     const loadMoreMessages = async () => {
-      isLoading.value = true
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Add new messages to the beginning of the array
-      const newMessages: Message[] = Array.from({ length: MESSAGES_PER_PAGE }, (_, i) => ({
-        text: `Loaded message ${page.value * MESSAGES_PER_PAGE - i}`,
-        from: i % 2 === 0 ? 'System' : 'OldUser',
-        timestamp: new Date(Date.now() - (page.value * MESSAGES_PER_PAGE - i) * 60000)
-      }))
-
-      messages.value = [...newMessages, ...messages.value]
-      page.value++
-      isLoading.value = false
-    }
+        isLoading.value = true;
+    
+        const container = chatContainer.value;
+        if (!container) {
+            console.error('Chat container not found');
+            isLoading.value = false;
+            return;
+        }
+    
+        const scrollHeight = container.scrollHeight; // Current height
+        const scrollTop = container.scrollTop; // Current scroll position
+    
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    
+        const newMessages: Message[] = Array.from({ length: MESSAGES_PER_PAGE }, (_, i) => ({
+            text: `Loaded message ${page.value * MESSAGES_PER_PAGE - i}`,
+            from: i % 2 === 0 ? 'System' : 'OldUser',
+            timestamp: new Date(Date.now() - (page.value * MESSAGES_PER_PAGE - i) * 60000)
+        }));
+    
+        // Insert new messages at the beginning
+        messages.value = [...newMessages, ...messages.value];
+    
+        nextTick(() => {
+            if (container) {
+                const newScrollHeight = container.scrollHeight; 
+                container.scrollTop = newScrollHeight - (scrollHeight - scrollTop);
+            }
+            isLoading.value = false;
+        });
+    
+        page.value++;
+    };
+    
 
     const observeFirstMessage = () => {
       if (firstMessage.value[0]) {
@@ -170,6 +190,9 @@ export default {
       window.removeEventListener('resize', checkScreenSize)
       if (observer.value && firstMessage.value[0]) {
         observer.value.unobserve(firstMessage.value[0])
+      }
+      if (typingTimeout.value) {
+        clearTimeout(typingTimeout.value)
       }
     })
 
@@ -202,18 +225,23 @@ export default {
     const handleInput = () => {
       console.log('Input received:', text.value)
       const inputText = text.value.trim()
+    
       if (inputText !== '') {
         if (inputText.startsWith('/')) {
           const command = inputText.slice(1).trim().toLowerCase()
           if (!handleCommand(command)) {
             console.error('Unrecognized command:', command)
-            text.value = ''
           }
         } else {
-          sendMessage()
+          sendMessage()  // Trigger the message sending logic
         }
+        clearTypingIndicator()  // Ensure typing indicator is cleared after input
       }
+    
+      // Forcefully clear the input text after message handling
+      text.value = ''
     }
+    
 
     const handleCommand = (command: string): boolean => {
       console.log('Command received:', command)
@@ -237,7 +265,7 @@ export default {
 
     const quitChat = () => {
       showNotification('Quitting chat...', 'info')
-      // Implement actual quit functionality here
+      // TO DO
     }
 
     const clearChat = () => {
@@ -255,11 +283,11 @@ export default {
 
     const showList = () => {
       const userList = chatUsers.value
-        .map(user => user.name) // Map to include only usernames
-        .join(', '); // Join users with a comma and space
+        .map(user => user.name) 
+        .join(', ');
 
       messages.value.push({
-        text: `Users in chat:\n${userList}`, // Add a new line after the label
+        text: `Users in chat:\n${userList}`,
         from: 'system',
         timestamp: new Date()
       });
@@ -314,6 +342,51 @@ export default {
       )
     }
 
+    
+
+    const isTyping = ref(false)
+    const isTypingExpanded = ref(false)
+    const typingTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
+
+    const TYPING_TIMEOUT = 5000 // 30 seconds in milliseconds
+
+    const handleTyping = () => {
+
+    
+      console.log('Handle typing:')
+      isTyping.value = true
+    
+      // Clear existing timeout
+      if (typingTimeout.value) {
+        clearTimeout(typingTimeout.value)
+      }
+    
+      // Set new timeout
+      typingTimeout.value = setTimeout(() => {
+        isTyping.value = false
+        isTypingExpanded.value = false
+      }, TYPING_TIMEOUT)
+    }
+    
+
+    const toggleTypingExpansion = () => {
+      isTypingExpanded.value = !isTypingExpanded.value
+    }
+
+    const clearTypingIndicator = () => {
+      console.log('Clearing typing indicator')  // Debug log to check if it's called
+      isTyping.value = false  // Reset the typing state
+      isTypingExpanded.value = false  // Reset the expanded typing state
+    
+      // Clear the timeout that controls the typing indicator
+      if (typingTimeout.value) {
+        clearTimeout(typingTimeout.value)
+        typingTimeout.value = null
+      }
+    }
+    
+    
+
     return {
       leftDrawerOpen,
       rightDrawerOpen,
@@ -336,6 +409,11 @@ export default {
       formatDate,
       currentUser,
       setUserStatus,
+      isTyping,
+      isTypingExpanded,
+      handleTyping,
+      toggleTypingExpansion,
+      clearTypingIndicator,
     }
   },
 }
